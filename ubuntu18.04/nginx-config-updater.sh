@@ -24,7 +24,18 @@ rtmp {
 
         application live {
             live on;
-            record on;
+            live all {
+                               record all;
+                               record_path /tmp/live;
+                               record_max_size 100000K;
+                               #record_max_frames 4;
+                               record_unique on;
+                               record_suffix _%d%m%Y_%H%M%S.flv;
+                               #record_append on;
+                               #record_interval 5s;
+                               #record_notify on;
+                              exec_record_done /bin/ffmpeg -i $path  -f mp4 /tmp/live/$basename.mp4;
+                       }
             exec ffmpeg -i rtmp://localhost/live/$name -threads 1 -c:v libx264 -profile:v baseline -b:v 350K -s 640x360 -f flv -c:a aac -ac 1 -strict -2 -b:a 56k rtmp://localhost/live360p/$name;
             # Turn on HLS
             hls on;
