@@ -24,8 +24,8 @@ rtmp {
 
         application live {
             live on;
-            exec ffmpeg -i rtmp://$PUBLIC_IPV4/$app/$name -vcodec libx264 -vprofile
-            baseline -x264opts keyint=40 -acodec aac -strict -2 -f flv rtmp://$PUBLIC_IPV4/hls/$name;
+            record on;
+            exec ffmpeg -i rtmp://localhost/live/$name -threads 1 -c:v libx264 -profile:v baseline -b:v 350K -s 640x360 -f flv -c:a aac -ac 1 -strict -2 -b:a 56k rtmp://localhost/live360p/$name;
             # Turn on HLS
             hls on;
             hls_path /tmp/hls;

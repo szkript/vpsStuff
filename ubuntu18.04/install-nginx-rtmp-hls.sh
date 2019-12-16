@@ -127,6 +127,7 @@ http {
 }
 EOL
 
+chmod -R 755 /tmp/hls
 ufw allow 1935/tcp
 systemctl restart nginx
 
