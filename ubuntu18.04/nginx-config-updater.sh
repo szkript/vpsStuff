@@ -52,13 +52,13 @@ http {
             add_header 'Access-Control-Expose-Headers' 'Content-Length';
 
             # allow CORS preflight requests
-            if ($request_method == 'OPTIONS') {
-                add_header 'Access-Control-Allow-Origin' '*';
-                add_header 'Access-Control-Max-Age' 1728000;
-                add_header 'Content-Type' 'text/plain charset=UTF-8';
-                add_header 'Content-Length' 0;
-                return 204;
-            }
+            # if ($request_method = 'OPTIONS') {
+            #     add_header 'Access-Control-Allow-Origin' '*';
+            #     add_header 'Access-Control-Max-Age' 1728000;
+            #     add_header 'Content-Type' 'text/plain charset=UTF-8';
+            #     add_header 'Content-Length' 0;
+            #     return 204;
+            # }
 
             types {
                 application/dash+xml mpd;
