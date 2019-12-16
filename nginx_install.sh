@@ -55,9 +55,9 @@ rtmp {
 
         application huha {
             live on;
-            exec ffmpeg -i rtmp://YourNginxIPAddress/$app/$name -vcodec libx264 -vprofile
+            exec ffmpeg -i rtmp://$PUBLIC_IPV4/$app/$name -vcodec libx264 -vprofile
 
-baseline -x264opts keyint=40 -acodec aac -strict -2 -f flv rtmp://YourNginxIPAddress/hls/$name;
+baseline -x264opts keyint=40 -acodec aac -strict -2 -f flv rtmp://$PUBLIC_IPV4/hls/$name;
         }
         application hls {
 
@@ -65,7 +65,7 @@ baseline -x264opts keyint=40 -acodec aac -strict -2 -f flv rtmp://YourNginxIPAdd
 
         hls on;
 
-        hls_path temp/hls/;
+        hls_path /tmp/hls/;
 
         hls_fragment 6s;
 
