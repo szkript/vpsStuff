@@ -27,18 +27,82 @@ cat > /var/www/$projectName/html/index.html <<EOL
 EOL
 
 cat > /etc/nginx/sites-available/$projectName<<EOL
-server {
-  listen 80;
-  listen [::]:80;
+# server {
+#   listen 80;
+#   listen [::]:80;
 
-  root /var/www/$projectName/html;
-  index index.html index.htm index.nginx-debian.html;
+#   root /var/www/$projectName/html;
+#   index index.html index.htm index.nginx-debian.html;
 
-  server_name $projectName $PUBLIC_IPV4;
+#   server_name $projectName $PUBLIC_IPV4;
 
-  location / {
-     try_files $uri $uri/ =404;
-  }
+#   location / {
+#      try_files $uri $uri/ =404;
+#   }
+# }
+
+worker_processes  1;
+
+error_log  logs/error.log info;
+
+events {
+    worker_connections  1024;
+}
+
+rtmp {
+    server {
+        listen 1935;
+
+        application huha {
+            live on;
+            exec ffmpeg -i rtmp://YourNginxIPAddress/$app/$name -vcodec libx264 -vprofile
+
+baseline -x264opts keyint=40 -acodec aac -strict -2 -f flv rtmp://YourNginxIPAddress/hls/$name;
+        }
+        application hls {
+
+        live on;
+
+        hls on;
+
+        hls_path temp/hls/;
+
+        hls_fragment 6s;
+
+        hls_playlist_length 60s;
+
+   }
+
+    }
+}
+
+http {
+    server {
+        listen      8080;
+		
+        location / {
+            root html;
+        }
+		
+        location /stat {
+            rtmp_stat all;
+            rtmp_stat_stylesheet stat.xsl;
+        }
+
+        location /stat.xsl {
+            root html;
+        }
+		
+        location /hls {  
+            #server hls fragments  
+            types{  
+                application/vnd.apple.mpegurl m3u8;  
+                video/mp2t ts;  
+            }  
+            alias temp/hls;  
+            expires -1;  
+        }  
+    }
 }
 EOL
 ln -s etc/nginx/sites-available/$projectName /etc/nginx/sites-enabled/
