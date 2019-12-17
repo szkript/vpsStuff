@@ -71,6 +71,8 @@ http {
 EOL
 
 chmod -R 755 /tmp/hls
+chmod -R 755 /mnt/hls
+
 systemctl reload nginx
 
 # user  nginx;
