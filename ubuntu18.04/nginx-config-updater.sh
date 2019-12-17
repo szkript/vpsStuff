@@ -14,7 +14,7 @@ rtmp {
             live on;
             # Turn on HLS
             hls on;
-            hls_path /mnt/hls/;
+            hls_path /tmp/hls/;
             hls_fragment 3;
             hls_playlist_length 60;
             # disable consuming the stream from nginx as rtmp
@@ -56,7 +56,7 @@ http {
                 video/mp2t ts;
             }
 
-            root /mnt/;
+            root /tmp/;
         }
     }
 }
