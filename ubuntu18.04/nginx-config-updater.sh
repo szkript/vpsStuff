@@ -101,4 +101,5 @@ http {
 }
 EOL
 
+chmod -R 755 /tmp/hls
 systemctl reload nginx
