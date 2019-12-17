@@ -1,3 +1,5 @@
+export PUBLIC_IPV4=$(curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address)
+
 cat > /etc/nginx/nginx.conf<<EOL
 user  nginx;
 worker_processes  1;
@@ -38,6 +40,7 @@ http {
 
     server {
         listen 8080;
+        server_name $PUBLIC_IPV4;
 
         location / {
             # Disable cache
