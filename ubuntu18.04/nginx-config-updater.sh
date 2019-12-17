@@ -20,6 +20,7 @@ rtmp {
 
         application show {
             live on;
+            exec ffmpeg -re -i example-vid.mp4 -vcodec libx264 -vprofile baseline -g 30 -acodec aac -strict -2 -f flv rtmp://localhost/show/stream
             # Turn on HLS
             hls on;
             hls_path /mnt/hls/;
