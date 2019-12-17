@@ -1,4 +1,78 @@
 cat > /etc/nginx/nginx.conf<<EOL
+user  nginx;
+worker_processes  1;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+load_module modules/ngx_rtmp_module.so;
+load_module modules/ngx_http_vod_module.so;
+
+events {
+    worker_connections  1024;
+}
+
+# RTMP configuration
+rtmp {
+    server {
+        listen 1935; # Listen on standard RTMP port
+        chunk_size 4000;
+
+        application show {
+            live on;
+            # Turn on HLS
+            hls on;
+            hls_path /mnt/hls/;
+            hls_fragment 3;
+            hls_playlist_length 60;
+            # disable consuming the stream from nginx as rtmp
+            deny play all;
+        }
+    }
+}
+
+http {
+    sendfile off;
+    tcp_nopush on;
+    aio on;
+    directio 512;
+    default_type application/octet-stream;
+
+    server {
+        listen 8080;
+
+        location / {
+            # Disable cache
+            add_header 'Cache-Control' 'no-cache';
+
+            # CORS setup
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Expose-Headers' 'Content-Length';
+
+            # allow CORS preflight requests
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*';
+                add_header 'Access-Control-Max-Age' 1728000;
+                add_header 'Content-Type' 'text/plain charset=UTF-8';
+                add_header 'Content-Length' 0;
+                return 204;
+            }
+
+            types {
+                application/dash+xml mpd;
+                application/vnd.apple.mpegurl m3u8;
+                video/mp2t ts;
+            }
+
+            root /mnt/;
+        }
+    }
+}
+EOL
+
+chmod -R 755 /tmp/hls
+systemctl reload nginx
+
 # user  nginx;
 # worker_processes  1;
 
@@ -24,7 +98,8 @@ cat > /etc/nginx/nginx.conf<<EOL
 
 #         application live {
 #             live on;
-#             # record on;
+#             record on;
+
 #             exec ffmpeg -i rtmp://localhost/live/$name -threads 1 -c:v libx264 -profile:v baseline -b:v 350K -s 640x360 -f flv -c:a aac -ac 1 -strict -2 -b:a 56k rtmp://localhost/live360p/$name;
 #             # Turn on HLS
 #             hls on;
@@ -98,69 +173,3 @@ cat > /etc/nginx/nginx.conf<<EOL
 #         }
 #     }
 # }
-
-worker_processes  auto;
-events {
-    worker_connections  1024;
-}
-
-# RTMP configuration
-rtmp {
-    server {
-        listen 1935; # Listen on standard RTMP port
-        chunk_size 4000;
-
-        application show {
-            live on;
-            # Turn on HLS
-            hls on;
-            hls_path /mnt/hls/;
-            hls_fragment 3;
-            hls_playlist_length 60;
-            # disable consuming the stream from nginx as rtmp
-            deny play all;
-        }
-    }
-}
-
-http {
-    sendfile off;
-    tcp_nopush on;
-    aio on;
-    directio 512;
-    default_type application/octet-stream;
-
-    server {
-        listen 8080;
-
-        location / {
-            # Disable cache
-            add_header 'Cache-Control' 'no-cache';
-
-            # CORS setup
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Expose-Headers' 'Content-Length';
-
-            # allow CORS preflight requests
-            if ($request_method = 'OPTIONS') {
-                add_header 'Access-Control-Allow-Origin' '*';
-                add_header 'Access-Control-Max-Age' 1728000;
-                add_header 'Content-Type' 'text/plain charset=UTF-8';
-                add_header 'Content-Length' 0;
-                return 204;
-            }
-
-            types {
-                application/dash+xml mpd;
-                application/vnd.apple.mpegurl m3u8;
-                video/mp2t ts;
-            }
-
-            root /mnt/;
-        }
-    }
-}
-EOL
-
-chmod -R 755 /tmp/hls
-systemctl reload nginx
