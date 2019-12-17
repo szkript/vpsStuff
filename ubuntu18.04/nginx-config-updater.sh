@@ -13,61 +13,73 @@ events {
 }
 
 # RTMP configuration
+
 rtmp {
     server {
         listen 1935; # Listen on standard RTMP port
         chunk_size 4000;
-
-        application show {
+        application live{
             live on;
-            exec ffmpeg -re -i example-vid.mp4 -vcodec libx264 -vprofile baseline -g 30 -acodec aac -strict -2 -f flv rtmp://localhost/show/stream
+            push rtmp://localhost/play;
+        }
+        application play {
+            live on;
             # Turn on HLS
             hls on;
-            hls_path /mnt/hls/;
+            hls_nested on;
+            hls_fragment_naming system;
+            #hls_path /Users/toan/Sites/mnt/hls/;
+            hls_path temp/hls/;
             hls_fragment 3;
             hls_playlist_length 60;
+
             # disable consuming the stream from nginx as rtmp
-            deny play all;
+
         }
     }
 }
+# End RTMP Config
 
 http {
+
+    default_type  application/octet-stream;
     sendfile off;
     tcp_nopush on;
-    aio on;
-    directio 512;
-    default_type application/octet-stream;
+
 
     server {
-        listen 8080;
+        listen 3002;
 
-        location / {
+        location /live {
+
             # Disable cache
-            add_header 'Cache-Control' 'no-cache';
+        add_header Cache-Control no-cache;
 
-            # CORS setup
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Expose-Headers' 'Content-Length';
+        # CORS setup
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Expose-Headers' 'Content-Length';
 
-            # allow CORS preflight requests
-            # if ($request_method = 'OPTIONS') {
-            #     add_header 'Access-Control-Allow-Origin' '*';
-            #     add_header 'Access-Control-Max-Age' 1728000;
-            #     add_header 'Content-Type' 'text/plain charset=UTF-8';
-            #     add_header 'Content-Length' 0;
-            #     return 204;
-            # }
+        # allow CORS preflight requests
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain charset=UTF-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
 
-            types {
-                application/dash+xml mpd;
-                application/vnd.apple.mpegurl m3u8;
-                video/mp2t ts;
-            }
+        types {
+            application/vnd.apple.mpegurl m3u8;
+            video/mp2t ts;
+        }
 
-            root /mnt/;
+
+            root temp/;
+
         }
     }
+
+    include servers/*;
 }
 EOL
 
