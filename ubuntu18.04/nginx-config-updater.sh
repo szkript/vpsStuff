@@ -26,8 +26,6 @@ rtmp {
             hls_path /mnt/hls/;
             hls_fragment 3;
             hls_playlist_length 60;
-            # disable consuming the stream from nginx as rtmp
-            deny play all;
         }
     }
 }
