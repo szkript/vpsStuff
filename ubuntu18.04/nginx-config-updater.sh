@@ -89,7 +89,7 @@ http {
         aio on;
 
         location /video/ {
-            alias /path/to/Videos/;
+            alias /tmp/hls;
             vod hls;
             add_header Access-Control-Allow-Headers '*';
             add_header Access-Control-Expose-Headers 'Server,range,Content-Length,Content-Range';
