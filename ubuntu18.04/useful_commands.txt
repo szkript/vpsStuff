@@ -1,0 +1,11 @@
+-for testing nginx conf
+nginx -t
+
+-get last 30 row from log
+tail -30 path/to/file
+
+-give full permission on file or dir
+chmod 666 path/to/fileOrDir
+
+-create new empty file
+touch filename
